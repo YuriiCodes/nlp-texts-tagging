@@ -1,5 +1,5 @@
 import streamlit as st
-from db import create_table, add_text, get_texts
+from db import create_table, add_text, get_texts, search_texts
 
 # Створення бази даних при запуску
 create_table()
@@ -21,8 +21,29 @@ with st.form("add_text_form"):
         else:
             st.error("Поле тексту не може бути порожнім!")
 
+
+# Секція пошуку текстів
+st.subheader("Пошук та фільтрація текстів")
+
+# Поля для пошуку
+query = st.text_input("Пошук за текстом (введіть ключове слово):")
+filter_tag = st.text_input("Фільтр за тегом (введіть тег):")
+
+# Кнопка для виконання пошуку
+if st.button("Пошук"):
+    results = search_texts(query=query, tag=filter_tag)
+    st.subheader("Результати пошуку")
+    if results:
+        for t in results:
+            st.write(f"**ID:** {t[0]}")
+            st.write(f"**Текст:** {t[1]}")
+            st.write(f"**Джерело:** {t[2]}")
+            st.write(f"**Теги:** {t[3]}")
+            st.markdown("---")
+    else:
+        st.info("Результатів не знайдено.")
 # Відображення збережених текстів
-st.subheader("Збережені тексти")
+st.subheader("Усі збережені тексти")
 texts = get_texts()
 
 if texts:

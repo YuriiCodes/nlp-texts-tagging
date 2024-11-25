@@ -30,3 +30,24 @@ def get_texts():
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+
+def search_texts(query=None, tag=None):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    query_base = "SELECT id, text, source, tags FROM texts WHERE 1=1"
+
+    # Динамічно додаємо фільтри
+    params = []
+    if query:
+        query_base += " AND text LIKE ?"
+        params.append(f"%{query}%")
+    if tag:
+        query_base += " AND tags LIKE ?"
+        params.append(f"%{tag}%")
+
+    cursor.execute(query_base, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
