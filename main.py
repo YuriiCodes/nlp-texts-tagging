@@ -51,11 +51,13 @@ st.subheader("Краулер для Wikipedia")
 base_url = st.text_input("URL статті Wikipedia для початку краулінгу:", "https://en.wikipedia.org/wiki/Web_scraping")
 # Поле для вибору глибини
 depth = st.slider("Глибина переходів за посиланнями", 1, 3, 1)
+# Поле для обмеження кількості статей
+max_articles = st.number_input("Максимальна кількість статей (0 - без обмежень):", min_value=0, step=1, value=0)
 
 # Кнопка для запуску краулера
 if st.button("Запустити краулер"):
     st.info("Краулер виконується, зачекайте...")
-    texts = crawl_wikipedia(base_url, depth=depth)
+    texts = crawl_wikipedia(base_url, depth=depth, max_articles=(max_articles if max_articles > 0 else None))
 
     if texts:
         for t in texts:
@@ -63,6 +65,7 @@ if st.button("Запустити краулер"):
         st.success(f"Краулер завершив роботу! Зібрано {len(texts)} статей.")
     else:
         st.warning("Не вдалося знайти текст для збереження.")
+
 # Відображення збережених текстів
 st.subheader("Усі збережені тексти")
 texts = get_texts()
