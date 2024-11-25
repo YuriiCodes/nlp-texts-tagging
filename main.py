@@ -1,5 +1,6 @@
 import streamlit as st
 from db import create_table, add_text, get_texts, search_texts
+from crawler import crawl_wikipedia
 
 # Створення бази даних при запуску
 create_table()
@@ -42,6 +43,26 @@ if st.button("Пошук"):
             st.markdown("---")
     else:
         st.info("Результатів не знайдено.")
+
+
+
+st.subheader("Краулер для Wikipedia")
+# Поле для введення початкового URL
+base_url = st.text_input("URL статті Wikipedia для початку краулінгу:", "https://en.wikipedia.org/wiki/Web_scraping")
+# Поле для вибору глибини
+depth = st.slider("Глибина переходів за посиланнями", 1, 3, 1)
+
+# Кнопка для запуску краулера
+if st.button("Запустити краулер"):
+    st.info("Краулер виконується, зачекайте...")
+    texts = crawl_wikipedia(base_url, depth=depth)
+
+    if texts:
+        for t in texts:
+            add_text(t['text'], t['url'], t['title'])
+        st.success(f"Краулер завершив роботу! Зібрано {len(texts)} статей.")
+    else:
+        st.warning("Не вдалося знайти текст для збереження.")
 # Відображення збережених текстів
 st.subheader("Усі збережені тексти")
 texts = get_texts()
