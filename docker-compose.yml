@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  streamlit:
+    build:
+      context: .
+      dockerfile: streamlit.Dockerfile
+    container_name: streamlit_app
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+      - sqlite_data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+    container_name: fastapi_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - sqlite_data:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  sqlite_data:
