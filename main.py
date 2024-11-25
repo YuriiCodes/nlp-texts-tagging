@@ -1,18 +1,18 @@
 import streamlit as st
-from db import create_table, add_text, get_texts, search_texts
+from db import create_table, add_text, get_texts, update_tags, search_texts
 from crawler import crawl_wikipedia
 
-# Створення бази даних при запуску
+# Ініціалізація бази даних
 create_table()
 
 st.title("Система накопичення текстів")
-st.subheader("Додайте текст у базу даних")
 
 # Форма для додавання текстів
+st.subheader("Додайте текст у базу даних")
 with st.form("add_text_form"):
     text = st.text_area("Введіть текст")
     source = st.text_input("Джерело тексту (необов'язково)")
-    tags = st.text_input("Теги (через кому, наприклад: навчання, стаття)")
+    tags = st.text_input("Теги (необов'язково; залиште порожнім для автоматичного генерування)")
     submitted = st.form_submit_button("Зберегти")
 
     if submitted:
@@ -22,22 +22,40 @@ with st.form("add_text_form"):
         else:
             st.error("Поле тексту не може бути порожнім!")
 
+# Відображення всіх текстів
+st.subheader("Збережені тексти")
+texts = get_texts()
+
+if texts:
+    for t in texts:
+        st.write(f"**ID:** {t[0]}")
+        st.write(f"**Текст:** {t[1][:200]}...")
+        st.write(f"**Джерело:** {t[2]}")
+        st.write(f"**Теги:** {t[3]}")
+
+        # Додамо форму для редагування тегів
+        with st.form(f"edit_tags_form_{t[0]}"):
+            new_tags = st.text_input("Редагувати теги:", t[3])
+            submitted = st.form_submit_button("Зберегти")
+            if submitted:
+                update_tags(t[0], new_tags)
+                st.success(f"Теги для тексту ID {t[0]} оновлено!")
+        st.markdown("---")
+else:
+    st.info("Немає збережених текстів.")
 
 # Секція пошуку текстів
 st.subheader("Пошук та фільтрація текстів")
-
-# Поля для пошуку
 query = st.text_input("Пошук за текстом (введіть ключове слово):")
 filter_tag = st.text_input("Фільтр за тегом (введіть тег):")
 
-# Кнопка для виконання пошуку
 if st.button("Пошук"):
     results = search_texts(query=query, tag=filter_tag)
     st.subheader("Результати пошуку")
     if results:
         for t in results:
             st.write(f"**ID:** {t[0]}")
-            st.write(f"**Текст:** {t[1]}")
+            st.write(f"**Текст:** {t[1][:200]}...")
             st.write(f"**Джерело:** {t[2]}")
             st.write(f"**Теги:** {t[3]}")
             st.markdown("---")
@@ -61,7 +79,7 @@ if st.button("Запустити краулер"):
 
     if texts:
         for t in texts:
-            add_text(t['text'], t['url'], t['title'])
+            add_text(t['text'], t['url'], None)
         st.success(f"Краулер завершив роботу! Зібрано {len(texts)} статей.")
     else:
         st.warning("Не вдалося знайти текст для збереження.")
